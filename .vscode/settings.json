@@ -1,0 +1,19 @@
+{
+    "[go]": {
+        "editor.formatOnSave": true,
+        "editor.codeActionsOnSave": {
+            "source.organizeImports": "explicit"
+        },
+    },
+    // gopls
+    "go.useLanguageServer": true,
+    "gopls": {
+        "formatting.local": "github.com/asphaltbuffet/ohm",
+    },
+    // golangci-lint  
+    "go.lintTool": "golangci-lint",
+    "go.lintFlags": [
+        "--fast"
+    ],
+    "go.formatTool": "goimports"
+}

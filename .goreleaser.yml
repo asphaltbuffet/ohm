@@ -1,0 +1,123 @@
+# yaml-language-server: $schema=https://goreleaser.com/static/schema-pro.json
+---
+version: 2
+
+before:
+  hooks:
+    - task setup generate
+    - ./scripts/completions.sh
+    - ./scripts/manpages.sh
+    - ./scripts/release_notes.sh {{ .RawVersion }}
+
+builds:
+  - env:
+      - CGO_ENABLED=0
+    flags:
+      - -trimpath
+    goos:
+      - darwin
+      - linux
+    goarch:
+      - "386"
+      - amd64
+      - arm64
+    goarm:
+      - "7"
+    ignore:
+      - goos: darwin
+        goarch: "386"
+    ldflags:
+      - -s -w -X {{.ModulePath}}/cmd/version/version.version={{.Version}}
+    mod_timestamp: "{{ .CommitTimestamp }}"
+
+upx:
+  - goos: [linux]
+    enabled: true
+    compress: best
+
+git:
+  ignore_tags:
+    - "{{ if not .IsNightly }}nightly{{ end }}"
+
+archives:
+  - format: tgz
+    name_template: >-
+      {{ .ProjectName }}-
+      {{- .Version }}-
+      {{- .Os }}-
+      {{- if eq .Arch "amd64" }}x86_64
+      {{- else if eq .Arch "386" }}i386
+      {{- else }}{{ .Arch}}{{ end }}
+      {{- if .Arm }}_v{{ .Arm }}{{ end }}
+    files:
+      - info:
+          owner: root
+          group: root
+          mode: 0644
+          mtime: "{{ .CommitDate }}"
+      - src: CHANGELOG*
+      - src: README*
+      - src: LICENSE*
+
+checksum:
+  name_template: "checksums.txt"
+
+snapshot:
+  name_template: "{{ .Version }}-snapshot"
+
+changelog:
+  disable: true
+
+release:
+  github:
+    owner: asphaltbuffet
+    name: ohm
+  prerelease: auto
+
+nightly:
+  publish_release: true
+  keep_single_release: true
+  name_template: "{{ incminor .Version }}-nightly"
+
+announce:
+  skip: true
+
+nfpms:
+  - file_name_template: "{{ .ConventionalFileName }}"
+    id: packages
+    homepage: https://github.com/asphaltbuffet/ohm
+    description: |-
+      Calculate axial resistor values using the color code.
+    maintainer: Ben Lechlitner <otherland@gmail.com>
+    license: MIT
+    vendor: asphaltbuffet
+    bindir: /usr/bin
+    section: utils
+    contents:
+      - src: ./completions/ohm.bash
+        dst: /usr/share/bash-completion/completions/ohm
+        file_info:
+          mode: 0644
+      - src: ./completions/ohm.fish
+        dst: /usr/share/fish/vendor_completions.d/ohm.fish
+        file_info:
+          mode: 0644
+      - src: ./completions/ohm.zsh
+        dst: /usr/share/zsh/vendor-completions/_ohm
+        file_info:
+          mode: 0644
+      - src: ./manpages/
+        dst: /usr/share/man/man1/
+        file_info:
+          mode: 0644
+      - src: ./LICENSE
+        dst: /usr/share/doc/ohm/copyright
+        file_info:
+          mode: 0644
+    formats:
+      - apk
+      - deb
+      - rpm
+    # dependencies:
+    #   - golang
+    # recommends:

@@ -15,5 +15,6 @@
     "go.lintFlags": [
         "--fast"
     ],
-    "go.formatTool": "goimports"
+    "go.formatTool": "goimports",
+    "go.toolsEnvVars": {}
 }

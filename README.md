@@ -12,3 +12,11 @@
 </div>
 
  calculate electrical resistance of axial-lead (through-hole) resistors by color code
+
+## References
+
+- [IEC 60062](https://webstore.iec.ch/en/publication/25395)
+- [RKM code](https://en.wikipedia.org/wiki/RKM_code)
+- [Resistor code](https://en.wikipedia.org/wiki/Electronic_color_code#Resistor_code)
+- https://eepower.com/resistor-guide/resistor-standards-and-codes/resistor-color-code/#
+- https://www.codrey.com/resistor/resistor-color-code/

@@ -30,3 +30,16 @@ func (bc BandCode) Validate() error {
 
 	return nil
 }
+
+func (bc BandCode) Resistance() (float64, error) {
+	if err := bc.Validate(); err != nil {
+		return 0, err
+	}
+
+	switch len(bc.Bands) {
+	case 3, 4: //nolint:mnd // 3 or 4 bands
+		return (bc.Bands[0].SignificantFigures*10 + bc.Bands[1].SignificantFigures) * bc.Bands[2].Multiplier, nil
+	default:
+		return 0, &BandInvalidError{Bands: bc.Bands}
+	}
+}

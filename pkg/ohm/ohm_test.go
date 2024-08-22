@@ -3,6 +3,7 @@ package ohm_test
 import (
 	"testing"
 
+	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
 	"github.com/asphaltbuffet/ohm/pkg/ohm"
@@ -33,6 +34,42 @@ func TestBandCode_Validate(t *testing.T) {
 			}
 
 			tt.assertion(t, bc.Validate())
+		})
+	}
+}
+
+func TestBandCode_Resistance(t *testing.T) {
+	red := ohm.Bands[ohm.Red]
+	gold := ohm.Bands[ohm.Gold]
+	orange := ohm.Bands[ohm.Orange]
+
+	tests := []struct {
+		name      string
+		Bands     []ohm.Band
+		want      float64
+		assertion require.ErrorAssertionFunc
+	}{
+		{
+			name:      "valid 3-band",
+			Bands:     []ohm.Band{red, red, orange},
+			want:      22_000,
+			assertion: require.NoError,
+		},
+		{
+			name:      "valid 4-band",
+			Bands:     []ohm.Band{red, red, orange, gold},
+			want:      22_000,
+			assertion: require.NoError,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			bc := ohm.BandCode{Bands: tt.Bands}
+
+			got, err := bc.Resistance()
+
+			tt.assertion(t, err)
+			assert.InEpsilon(t, tt.want, 0.0001, got)
 		})
 	}
 }

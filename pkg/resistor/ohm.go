@@ -1,4 +1,4 @@
-package ohm
+package resistor
 
 // BandCode is a struct that represents a resistor 4, 5, or 6 band code.
 type BandCode struct {

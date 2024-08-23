@@ -1,4 +1,4 @@
-package ohm
+package resistor
 
 type BandColor int
 
@@ -31,8 +31,8 @@ type Band struct {
 	TCR                int     // TCR is the temperature coefficient of resistance in ppm/K.
 }
 
-//nolint:mnd // reference value
-var Bands = map[BandColor]Band{ //nolint:gochecknoglobals // global reference
+//nolint:mnd,gochecknoglobals // reference value
+var Bands = map[BandColor]Band{
 	Black: {
 		Code:               "BK",
 		SignificantFigures: 0,
@@ -48,60 +48,70 @@ var Bands = map[BandColor]Band{ //nolint:gochecknoglobals // global reference
 		TCR:                100,
 	},
 	Red: {
+		Code:               "RD",
 		SignificantFigures: 2,
 		Multiplier:         100,
 		Tolerance:          2,
 		TCR:                50,
 	},
 	Orange: {
+		Code:               "OG",
 		SignificantFigures: 3,
 		Multiplier:         1_000,
 		Tolerance:          3,
 		TCR:                15,
 	},
 	Yellow: {
+		Code:               "YE",
 		SignificantFigures: 4,
 		Multiplier:         10_000,
 		Tolerance:          4,
 		TCR:                25,
 	},
 	Green: {
+		Code:               "GN",
 		SignificantFigures: 5,
 		Multiplier:         100_000,
 		Tolerance:          0.5,
 		TCR:                20,
 	},
 	Blue: {
+		Code:               "BL",
 		SignificantFigures: 6,
 		Multiplier:         1_000_000,
 		Tolerance:          0.25,
 		TCR:                10,
 	},
 	Violet: {
+		Code:               "VT",
 		SignificantFigures: 7,
 		Multiplier:         10_000_000,
 		Tolerance:          0.1,
 		TCR:                5,
 	},
 	Grey: {
+		Code:               "GY",
 		SignificantFigures: 8,
 		Multiplier:         100_000_000,
 		Tolerance:          0.05,
 		TCR:                1,
 	},
 	White: {
+		Code:               "WH",
 		SignificantFigures: 9,
 		Multiplier:         1_000_000_000,
 		Tolerance:          Invalid,
 		TCR:                Invalid,
 	},
 	Gold: {
+		Code:               "GD",
 		SignificantFigures: -1,
 		Multiplier:         0.1,
 		Tolerance:          5,
 		TCR:                Invalid,
 	},
 	Silver: {
+		Code:               "SV",
 		SignificantFigures: -1,
 		Multiplier:         0.01,
 		Tolerance:          10,

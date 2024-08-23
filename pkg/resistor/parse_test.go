@@ -1,4 +1,4 @@
-package ohm_test
+package resistor_test
 
 import (
 	"testing"
@@ -6,7 +6,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
-	"github.com/asphaltbuffet/ohm/pkg/ohm"
+	"github.com/asphaltbuffet/ohm/pkg/resistor"
 )
 
 func TestTokenize(t *testing.T) {
@@ -24,7 +24,7 @@ func TestTokenize(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			assert.Equal(t, tt.want, ohm.Tokenize(tt.args))
+			assert.Equal(t, tt.want, resistor.Tokenize(tt.args))
 		})
 	}
 }
@@ -33,22 +33,22 @@ func TestParse(t *testing.T) {
 	tests := []struct {
 		name      string
 		args      string
-		want      *ohm.BandCode
+		want      *resistor.BandCode
 		assertion require.ErrorAssertionFunc
 	}{
 		{"empty", "", nil, require.Error},
 		{"one char", "B", nil, require.Error},
-		{"one token", "BK", &ohm.BandCode{Bands: []ohm.Band{ohm.Bands[ohm.Black]}}, require.NoError},
+		{"one token", "BK", &resistor.BandCode{Bands: []resistor.Band{resistor.Bands[resistor.Black]}}, require.NoError},
 		{
 			"multiple tokens",
 			"BKBUPKSVSV",
-			&ohm.BandCode{
-				Bands: []ohm.Band{
-					ohm.Bands[ohm.Black],
-					ohm.Bands[ohm.Blue],
-					ohm.Bands[ohm.Pink],
-					ohm.Bands[ohm.Silver],
-					ohm.Bands[ohm.Silver],
+			&resistor.BandCode{
+				Bands: []resistor.Band{
+					resistor.Bands[resistor.Black],
+					resistor.Bands[resistor.Blue],
+					resistor.Bands[resistor.Pink],
+					resistor.Bands[resistor.Silver],
+					resistor.Bands[resistor.Silver],
 				},
 			},
 			require.NoError,
@@ -57,7 +57,7 @@ func TestParse(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := ohm.Parse(tt.args)
+			got, err := resistor.Parse(tt.args)
 			tt.assertion(t, err)
 			assert.Equal(t, tt.want, got)
 		})
@@ -70,18 +70,18 @@ func TestGetColor(t *testing.T) {
 	tests := []struct {
 		name string
 		args string
-		want ohm.BandColor
+		want resistor.BandColor
 	}{
-		{"lowercase", "pk", ohm.Pink},
-		{"uppercase", "SV", ohm.Silver},
-		{"full name", "purple", ohm.Violet},
-		{"invalid", "ZZ", ohm.Invalid},
+		{"lowercase", "pk", resistor.Pink},
+		{"uppercase", "SV", resistor.Silver},
+		{"full name", "purple", resistor.Violet},
+		{"invalid", "ZZ", resistor.Invalid},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
 
-			assert.Equal(t, tt.want, ohm.GetColor(tt.args))
+			assert.Equal(t, tt.want, resistor.GetColor(tt.args))
 		})
 	}
 }

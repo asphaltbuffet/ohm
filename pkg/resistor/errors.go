@@ -1,4 +1,4 @@
-package ohm
+package resistor
 
 import "fmt"
 

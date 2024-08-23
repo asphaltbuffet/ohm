@@ -1,4 +1,4 @@
-package ohm
+package resistor
 
 type BandColor int
 

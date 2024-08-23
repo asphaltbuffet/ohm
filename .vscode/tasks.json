@@ -7,11 +7,29 @@
             "label": "Build or Test",
             "type": "shell",
             "command": "task dev",
-            "problemMatcher": [
-                "$go"
-            ],
+            "problemMatcher": ["$go"],
             "group": {
                 "kind": "build",
+                "isDefault": true,
+            }
+        },
+        {
+            "label": "Lint",
+            "type": "shell",
+            "command": "task lint",
+            "problemMatcher": ["$go"],
+            "group": {
+                "kind": "build",
+                "isDefault": false,
+            }
+        },
+        {
+            "label": "Test",
+            "type": "shell",
+            "command": "task test",
+            "problemMatcher": ["$go"],
+            "group": {
+                "kind": "test",
                 "isDefault": true,
             }
         }

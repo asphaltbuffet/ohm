@@ -6,8 +6,8 @@ import (
 
 	"github.com/spf13/cobra"
 
-	"github.com/asphaltbuffet/ohm/cmd/axial"
 	"github.com/asphaltbuffet/ohm/cmd/man"
+	smdcli "github.com/asphaltbuffet/ohm/cmd/smd"
 	versionCmd "github.com/asphaltbuffet/ohm/cmd/version"
 )
 
@@ -24,12 +24,13 @@ func Execute() {
 func NewCommand() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:               "ohm",
-		Short:             "ohm calculates values for axial resistors",
+		Short:             "ohm calculates the values of resistors",
 		Args:              cobra.NoArgs,
 		CompletionOptions: cobra.CompletionOptions{HiddenDefaultCmd: true},
 	}
 
-	cmd.AddCommand(axial.NewCommand())
+	cmd.AddCommand(axialcli.NewCommand())
+	cmd.AddCommand(smdcli.NewCommand())
 
 	cmd.AddCommand(man.NewCommand())
 	cmd.AddCommand(versionCmd.NewCommand())

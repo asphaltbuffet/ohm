@@ -32,16 +32,23 @@ func TestTokenize(t *testing.T) {
 func TestParse(t *testing.T) {
 	tests := []struct {
 		name      string
-		args      string
+		args      []string
 		want      *resistor.BandCode
 		assertion require.ErrorAssertionFunc
 	}{
-		{"empty", "", nil, require.Error},
-		{"one char", "B", nil, require.Error},
-		{"one token", "BK", &resistor.BandCode{Bands: []resistor.Band{resistor.Bands[resistor.Black]}}, require.NoError},
+		{"empty", []string{""}, nil, require.Error},
+		{"one char", []string{"B"}, nil, require.Error},
+		{
+			"one token",
+			[]string{"BK"},
+			&resistor.BandCode{
+				Bands: []resistor.Band{resistor.Bands[resistor.Black]},
+			},
+			require.NoError,
+		},
 		{
 			"multiple tokens",
-			"BKBUPKSVSV",
+			[]string{"BKBUPKSVSV"},
 			&resistor.BandCode{
 				Bands: []resistor.Band{
 					resistor.Bands[resistor.Black],
@@ -53,7 +60,21 @@ func TestParse(t *testing.T) {
 			},
 			require.NoError,
 		},
-		{"invalid color", "ZZ", nil, require.Error},
+		{"invalid color", []string{"ZZ"}, nil, require.Error},
+		{
+			"pre-tokenized",
+			[]string{"BK", "BU", "PK", "SV", "SV"},
+			&resistor.BandCode{
+				Bands: []resistor.Band{
+					resistor.Bands[resistor.Black],
+					resistor.Bands[resistor.Blue],
+					resistor.Bands[resistor.Pink],
+					resistor.Bands[resistor.Silver],
+					resistor.Bands[resistor.Silver],
+				},
+			},
+			require.NoError,
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {

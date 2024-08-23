@@ -1,19 +1,30 @@
 package resistor
 
-import "strings"
+import (
+	"fmt"
+	"strings"
+)
 
-func Parse(s string) (*BandCode, error) {
-	tokens := Tokenize(s)
+func Parse(s []string) (*BandCode, error) {
+	var tokens []string
+
+	if len(s) == 1 {
+		// if only one argument is passed, assume it is a color code string with abbreviations
+		tokens = Tokenize(s[0])
+	} else {
+		tokens = s
+	}
+
 	if tokens == nil {
 		return nil, &BandCodeLengthError{Length: len(s)}
 	}
 
 	var bands []Band
-	for _, token := range tokens {
+	for i, token := range tokens {
 		c := GetColor(token)
 		band, ok := Bands[c]
 		if !ok {
-			return nil, &BandCodeColorError{ColorCode: token, BandType: "Unknown"}
+			return nil, &BandCodeColorError{ColorCode: token, BandType: fmt.Sprintf("token[%d]", i)}
 		}
 		bands = append(bands, band)
 	}

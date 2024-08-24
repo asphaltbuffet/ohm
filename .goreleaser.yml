@@ -29,7 +29,8 @@ builds:
     ldflags:
       - -s -w -X {{.ModulePath}}/cmd/version/version.version={{.Version}}
     mod_timestamp: "{{ .CommitTimestamp }}"
-
+universal_binaries:
+  - replace: true
 upx:
   - goos: [linux]
     enabled: true

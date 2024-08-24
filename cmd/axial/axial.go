@@ -15,14 +15,61 @@ func NewCommand() *cobra.Command {
 		Run:     RunAxial,
 	}
 
+	cmd.Flags().BoolP("verbose", "v", false, "show work")
+
 	return cmd
 }
 
 func RunAxial(cmd *cobra.Command, args []string) {
-	code, err := resistor.Parse(args)
+	var rev bool
+
+	code, err := resistor.Parse(args, rev)
 	if err != nil {
-		cmd.PrintErrln(err)
-		return
+		rev = !rev
+		// try again with reversed order
+		code, err = resistor.Parse(args, rev)
+		if err != nil {
+			cmd.PrintErrln(err)
+			return
+		}
+
+		cmd.PrintErrln("reverse order detected")
+	}
+
+	verbose, _ := cmd.Flags().GetBool("verbose")
+
+	if verbose {
+		switch len(code.Bands) {
+		case 3, 4:
+			cmd.PrintErrf(
+				"%0.1f[%s] * 10 + %0.1f[%s] * %0.1f[%s]\n",
+				code.Bands[0].SigFig, code.Bands[0].Code,
+				code.Bands[1].SigFig, code.Bands[1].Code,
+				code.Bands[2].Multiplier, code.Bands[2].Code,
+			)
+
+			if len(code.Bands) == 4 {
+				cmd.PrintErrf("  Tolerance: %0.2f%% [%s]\n", code.Bands[3].Multiplier, code.Bands[3].Code)
+			}
+
+		case 5, 6:
+			cmd.PrintErrf(
+				"((%0.1f[%s] * 100) + (%0.1f[%s] * 10) + %0.1f[%s]) * %0.1f[%s]\n",
+				code.Bands[0].SigFig, code.Bands[0].Code,
+				code.Bands[1].SigFig, code.Bands[1].Code,
+				code.Bands[2].SigFig, code.Bands[2].Code,
+				code.Bands[3].Multiplier, code.Bands[3].Code,
+			)
+
+			cmd.PrintErrf("  Tolerance: %0.2f%% [%s]\n", code.Bands[3].Multiplier, code.Bands[3].Code)
+
+			if len(code.Bands) == 6 {
+				cmd.PrintErrf("  Tolerance: %0.2f%% [%s]\n", code.Bands[3].Multiplier, code.Bands[3].Code)
+			}
+
+		default:
+			cmd.PrintErrln("can't show work")
+		}
 	}
 
 	val, err := code.Resistance()

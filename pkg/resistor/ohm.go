@@ -7,28 +7,40 @@ type BandCode struct {
 
 // Validate checks if the band code is valid.
 func (bc BandCode) Validate() error {
-	if len(bc.Bands) < 3 || len(bc.Bands) > 6 { // TODO: support 0 Ω resistors (single black)
-		return &BandCodeLengthError{Length: len(bc.Bands)}
-	}
+	return validateBandOrder(bc.Bands)
+}
 
-	// gold/silver/pink bands are not allowed in the first two bands
-	for i := 0; i <= 1; i++ {
-		if bc.Bands[i].SignificantFigures == Invalid {
-			return &BandCodeColorError{ColorCode: bc.Bands[i].Code, BandType: "SigFig"}
-		}
-	}
+func validateBandOrder(b []Band) error {
+	l := len(b)
 
-	// 3rd band is the multiplier
-	if bc.Bands[2].Multiplier == Invalid {
-		return &BandCodeColorError{ColorCode: bc.Bands[2].Code, BandType: "Mult"}
-	}
+	//nolint:mnd // 3, 4, 5, or 6 bands
+	switch {
+	case l == 1 && b[0].Code != "BK": // 0 Ω resistors are single black band
+		fallthrough
+	case l < 3, l > 6:
+		return &BandCodeLengthError{Length: l}
 
-	// 4th band is the tolerance
-	if len(bc.Bands) == 4 && bc.Bands[3].Tolerance == Invalid {
-		return &BandCodeColorError{ColorCode: bc.Bands[3].Code, BandType: "Tol"}
-	}
+	case b[0].SigFig == Invalid:
+		return &BandCodeColorError{ColorCode: b[0].Code, BandType: "significant figure"}
 
-	return nil
+	case b[1].SigFig == Invalid:
+		return &BandCodeColorError{ColorCode: b[1].Code, BandType: "significant figure"}
+
+	// any color can be used for band 3 if it's a multiplier, but
+	// 5/6 band resistors have a 3rd significant figure band
+	case l >= 5 && b[2].SigFig == Invalid:
+		return &BandCodeColorError{ColorCode: b[2].Code, BandType: "significant figure"}
+
+	case l == 4 && b[3].Tolerance == Invalid:
+		return &BandCodeColorError{ColorCode: b[3].Code, BandType: "tolerance"}
+
+	case l >= 5 && b[4].Tolerance == Invalid:
+		return &BandCodeColorError{ColorCode: b[4].Code, BandType: "tolerance"}
+	case l >= 6 && b[5].TCR == Invalid:
+		return &BandCodeColorError{ColorCode: b[5].Code, BandType: "TCR"}
+	default:
+		return nil
+	}
 }
 
 func (bc BandCode) Resistance() (float64, error) {
@@ -38,7 +50,12 @@ func (bc BandCode) Resistance() (float64, error) {
 
 	switch len(bc.Bands) {
 	case 3, 4: //nolint:mnd // 3 or 4 bands
-		return (bc.Bands[0].SignificantFigures*10 + bc.Bands[1].SignificantFigures) * bc.Bands[2].Multiplier, nil
+		return (bc.Bands[0].SigFig*10 + bc.Bands[1].SigFig) * bc.Bands[2].Multiplier, nil
+
+	case 5, 6: //nolint:mnd // 5 or 6 bands
+		return (bc.Bands[0].SigFig*100 + bc.Bands[1].SigFig*10 + bc.Bands[2].SigFig) * bc.Bands[3].Multiplier,
+			nil
+
 	default:
 		return 0, &BandInvalidError{Bands: bc.Bands}
 	}

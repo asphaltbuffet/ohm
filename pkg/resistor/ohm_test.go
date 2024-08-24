@@ -61,6 +61,12 @@ func TestBandCode_Resistance(t *testing.T) {
 			want:      22_000,
 			assertion: require.NoError,
 		},
+		{
+			name:      "valid 5-band",
+			Bands:     []resistor.Band{red, red, orange, orange, gold},
+			want:      223_000,
+			assertion: require.NoError,
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {

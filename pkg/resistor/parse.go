@@ -2,10 +2,11 @@ package resistor
 
 import (
 	"fmt"
+	"slices"
 	"strings"
 )
 
-func Parse(s []string) (*BandCode, error) {
+func Parse(s []string, rev bool) (*BandCode, error) {
 	var tokens []string
 
 	if len(s) == 1 {
@@ -19,6 +20,19 @@ func Parse(s []string) (*BandCode, error) {
 		return nil, &BandCodeLengthError{Length: len(s)}
 	}
 
+	if rev {
+		slices.Reverse(tokens)
+	}
+
+	bands, err := convertToBands(tokens)
+	if err != nil {
+		return nil, err
+	}
+
+	return &BandCode{Bands: bands}, nil
+}
+
+func convertToBands(tokens []string) ([]Band, error) {
 	var bands []Band
 	for i, token := range tokens {
 		c := GetColor(token)
@@ -29,7 +43,7 @@ func Parse(s []string) (*BandCode, error) {
 		bands = append(bands, band)
 	}
 
-	return &BandCode{Bands: bands}, nil
+	return bands, nil
 }
 
 func Tokenize(s string) []string {

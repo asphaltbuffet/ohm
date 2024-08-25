@@ -1,9 +1,9 @@
-package axial
+package axialcli
 
 import (
 	"github.com/spf13/cobra"
 
-	"github.com/asphaltbuffet/ohm/pkg/resistor"
+	"github.com/asphaltbuffet/ohm/pkg/resistor/axial"
 )
 
 func NewCommand() *cobra.Command {
@@ -23,11 +23,11 @@ func NewCommand() *cobra.Command {
 func RunAxial(cmd *cobra.Command, args []string) {
 	var rev bool
 
-	code, err := resistor.Parse(args, rev)
+	code, err := axial.Parse(args, rev)
 	if err != nil {
 		rev = !rev
 		// try again with reversed order
-		code, err = resistor.Parse(args, rev)
+		code, err = axial.Parse(args, rev)
 		if err != nil {
 			cmd.PrintErrln(err)
 			return
@@ -40,7 +40,7 @@ func RunAxial(cmd *cobra.Command, args []string) {
 
 	if verbose {
 		switch len(code.Bands) {
-		case resistor.Axial3Band, resistor.Axial4Band:
+		case axial.Axial3Band, axial.Axial4Band:
 			cmd.PrintErrf(
 				"%0.1f[%s] * 10 + %0.1f[%s] * %0.1f[%s]\n",
 				code.Bands[0].SigFig, code.Bands[0].Code,
@@ -48,11 +48,11 @@ func RunAxial(cmd *cobra.Command, args []string) {
 				code.Bands[2].Multiplier, code.Bands[2].Code,
 			)
 
-			if len(code.Bands) == resistor.Axial4Band {
+			if len(code.Bands) == axial.Axial4Band {
 				cmd.PrintErrf("  Tolerance: %0.2f%% [%s]\n", code.Bands[3].Multiplier, code.Bands[3].Code)
 			}
 
-		case resistor.Axial5Band, resistor.Axial6Band:
+		case axial.Axial5Band, axial.Axial6Band:
 			cmd.PrintErrf(
 				"((%0.1f[%s] * 100) + (%0.1f[%s] * 10) + %0.1f[%s]) * %0.1f[%s]\n",
 				code.Bands[0].SigFig, code.Bands[0].Code,
@@ -63,7 +63,7 @@ func RunAxial(cmd *cobra.Command, args []string) {
 
 			cmd.PrintErrf("  Tolerance: %0.2f%% [%s]\n", code.Bands[3].Multiplier, code.Bands[3].Code)
 
-			if len(code.Bands) == resistor.Axial6Band {
+			if len(code.Bands) == axial.Axial6Band {
 				cmd.PrintErrf("  Tolerance: %0.2f%% [%s]\n", code.Bands[3].Multiplier, code.Bands[3].Code)
 			}
 

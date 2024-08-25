@@ -1,4 +1,4 @@
-package resistor
+package axial
 
 //go:generate stringer -type=BandColor
 type BandColor int

@@ -1,4 +1,4 @@
-package resistor
+package axial
 
 import "fmt"
 

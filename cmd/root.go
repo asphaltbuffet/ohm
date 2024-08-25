@@ -6,6 +6,7 @@ import (
 
 	"github.com/spf13/cobra"
 
+	axialcli "github.com/asphaltbuffet/ohm/cmd/axial"
 	"github.com/asphaltbuffet/ohm/cmd/man"
 	smdcli "github.com/asphaltbuffet/ohm/cmd/smd"
 	versionCmd "github.com/asphaltbuffet/ohm/cmd/version"

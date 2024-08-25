@@ -6,41 +6,55 @@ import (
 	"strings"
 )
 
-func Parse(s []string, rev bool) (*BandCode, error) {
-	var tokens []string
+func Parse(ss []string, rev bool) (*BandCode, error) {
+	var (
+		tokens []string
+		err    error
+	)
 
-	if len(s) == 1 {
+	if len(ss) == 1 {
 		// if only one argument is passed, assume it is a color code string with abbreviations
-		tokens = Tokenize(s[0])
+		tokens = Tokenize(ss[0])
 	} else {
-		tokens = s
+		tokens = ss
 	}
 
 	if tokens == nil {
-		return nil, &BandCodeLengthError{Length: len(s)}
+		return nil, fmt.Errorf("tokenized %v: %w", tokens, ErrBandCodeLength)
 	}
 
 	if rev {
 		slices.Reverse(tokens)
 	}
 
-	bands, err := convertToBands(tokens)
+	bands, err := convertToBands(tokens) // this only validates inputs are colors
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("convert to bands: %w", err)
 	}
 
-	return &BandCode{Bands: bands}, nil
+	// if order is invalid, reverse the order and try again
+	if v := validateBandOrder(bands); v != nil {
+		rev = !rev
+		slices.Reverse(bands)
+
+		err = validateBandOrder(bands)
+		if err != nil {
+			return nil, fmt.Errorf("reversed: %w", err) // TODO: this should wrap both errors; not hide the first one
+		}
+	}
+
+	return &BandCode{Reversed: rev, Bands: bands}, nil
 }
 
 func convertToBands(tokens []string) ([]Band, error) {
 	var bands []Band
-	for i, token := range tokens {
+	for _, token := range tokens {
 		c := GetColor(token)
-		band, ok := Bands[c]
-		if !ok {
-			return nil, &BandCodeColorError{ColorCode: token, BandType: fmt.Sprintf("token[%d]", i)}
+		if c == None {
+			return nil, fmt.Errorf("convert %q to band: %w", token, ErrBandColor)
 		}
-		bands = append(bands, band)
+
+		bands = append(bands, Bands[c])
 	}
 
 	return bands, nil
@@ -49,8 +63,8 @@ func convertToBands(tokens []string) ([]Band, error) {
 func Tokenize(s string) []string {
 	var tokens []string
 
+	// string must have an even number of characters
 	if len(s)%2 != 0 {
-		// string must have an even number of characters
 		return nil
 	}
 
@@ -62,43 +76,36 @@ func Tokenize(s string) []string {
 	return tokens
 }
 
-//nolint:gochecknoglobals // internal lookup
-var colorMap = map[string]BandColor{
-	"bk":     Black,
-	"black":  Black,
-	"bn":     Brown,
-	"brown":  Brown,
-	"rd":     Red,
-	"red":    Red,
-	"og":     Orange,
-	"orange": Orange,
-	"ye":     Yellow,
-	"yellow": Yellow,
-	"gn":     Green,
-	"green":  Green,
-	"bu":     Blue,
-	"blue":   Blue,
-	"vt":     Violet,
-	"violet": Violet,
-	"pu":     Violet,
-	"purple": Violet,
-	"gy":     Grey,
-	"grey":   Grey,
-	"slate":  Grey,
-	"wh":     White,
-	"white":  White,
-	"gd":     Gold,
-	"gold":   Gold,
-	"sv":     Silver,
-	"silver": Silver,
-	"pk":     Pink,
-	"pink":   Pink,
-}
-
 func GetColor(s string) BandColor {
-	if color, exists := colorMap[strings.ToLower(s)]; exists {
-		return color
-	}
-
-	return Invalid
+	return map[string]BandColor{
+		"bk":     Black,
+		"black":  Black,
+		"bn":     Brown,
+		"brown":  Brown,
+		"rd":     Red,
+		"red":    Red,
+		"og":     Orange,
+		"orange": Orange,
+		"ye":     Yellow,
+		"yellow": Yellow,
+		"gn":     Green,
+		"green":  Green,
+		"bu":     Blue,
+		"blue":   Blue,
+		"vt":     Violet,
+		"violet": Violet,
+		"pu":     Violet,
+		"purple": Violet,
+		"gy":     Grey,
+		"grey":   Grey,
+		"slate":  Grey,
+		"wh":     White,
+		"white":  White,
+		"gd":     Gold,
+		"gold":   Gold,
+		"sv":     Silver,
+		"silver": Silver,
+		"pk":     Pink,
+		"pink":   Pink,
+	}[strings.ToLower(s)]
 }

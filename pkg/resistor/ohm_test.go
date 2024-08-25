@@ -16,32 +16,34 @@ func TestBandCode_Validate(t *testing.T) {
 	pink := resistor.Bands[resistor.Pink]
 
 	tests := []struct {
-		name      string
-		bands     []resistor.Band
-		assertion require.ErrorAssertionFunc
+		name  string
+		bands []resistor.Band
+		want  error
 	}{
-		{"valid 3-band", []resistor.Band{black, red, red}, require.NoError},
-		{"invalid first band", []resistor.Band{gold, red, red}, require.Error},
-		{"invalid second band", []resistor.Band{red, gold, red}, require.Error},
-		{"gold multiplier", []resistor.Band{red, red, gold}, require.NoError},
-		{"valid 4-band", []resistor.Band{red, red, gold, gold}, require.NoError},
-		{"invalid tolerance", []resistor.Band{red, red, gold, pink}, require.Error},
+		{"valid 3-band", []resistor.Band{black, red, red}, nil},
+		{"invalid first band", []resistor.Band{gold, red, red}, resistor.ErrBandPosition},
+		{"invalid second band", []resistor.Band{red, gold, red}, resistor.ErrBandPosition},
+		{"gold multiplier", []resistor.Band{red, red, gold}, nil},
+		{"valid 4-band", []resistor.Band{red, red, gold, gold}, nil},
+		{"invalid tolerance", []resistor.Band{red, red, gold, pink}, resistor.ErrBandPosition},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			bc := resistor.BandCode{
-				Bands: tt.bands,
+				Bands:    tt.bands,
+				Reversed: false,
 			}
 
-			tt.assertion(t, bc.Validate())
+			assert.ErrorIs(t, bc.Validate(), tt.want)
 		})
 	}
 }
 
-func TestBandCode_Resistance(t *testing.T) {
+func TestBandCode_Value(t *testing.T) {
 	red := resistor.Bands[resistor.Red]
 	gold := resistor.Bands[resistor.Gold]
 	orange := resistor.Bands[resistor.Orange]
+	pink := resistor.Bands[resistor.Pink]
 
 	tests := []struct {
 		name      string
@@ -56,10 +58,22 @@ func TestBandCode_Resistance(t *testing.T) {
 			assertion: require.NoError,
 		},
 		{
+			name:      "invalid sig fig",
+			Bands:     []resistor.Band{gold, red, orange, gold},
+			want:      0,
+			assertion: require.Error,
+		},
+		{
 			name:      "valid 4-band",
 			Bands:     []resistor.Band{red, red, orange, gold},
 			want:      22_000,
 			assertion: require.NoError,
+		},
+		{
+			name:      "invalid 4-band tolerance",
+			Bands:     []resistor.Band{red, red, orange, pink},
+			want:      0,
+			assertion: require.Error,
 		},
 		{
 			name:      "valid 5-band",
@@ -67,15 +81,35 @@ func TestBandCode_Resistance(t *testing.T) {
 			want:      223_000,
 			assertion: require.NoError,
 		},
+		{
+			name:      "invalid precision sig fig",
+			Bands:     []resistor.Band{red, red, pink, orange, gold},
+			want:      0,
+			assertion: require.Error,
+		},
+		{
+			name:      "invalid precision tolerance",
+			Bands:     []resistor.Band{red, red, orange, orange, pink},
+			want:      0,
+			assertion: require.Error,
+		},
+		{
+			name:      "invalid precision TCR",
+			Bands:     []resistor.Band{red, red, orange, orange, gold, pink},
+			want:      0,
+			assertion: require.Error,
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			bc := resistor.BandCode{Bands: tt.Bands}
+			bc := resistor.BandCode{Reversed: false, Bands: tt.Bands}
 
-			got, err := bc.Resistance()
+			got, err := bc.Value()
 
 			tt.assertion(t, err)
-			assert.InEpsilon(t, tt.want, 0.0001, got)
+			if err == nil {
+				assert.InEpsilon(t, tt.want, 0.0001, got)
+			}
 		})
 	}
 }

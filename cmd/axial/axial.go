@@ -40,7 +40,7 @@ func RunAxial(cmd *cobra.Command, args []string) {
 
 	if verbose {
 		switch len(code.Bands) {
-		case 3, 4:
+		case resistor.Axial3Band, resistor.Axial4Band:
 			cmd.PrintErrf(
 				"%0.1f[%s] * 10 + %0.1f[%s] * %0.1f[%s]\n",
 				code.Bands[0].SigFig, code.Bands[0].Code,
@@ -48,11 +48,11 @@ func RunAxial(cmd *cobra.Command, args []string) {
 				code.Bands[2].Multiplier, code.Bands[2].Code,
 			)
 
-			if len(code.Bands) == 4 {
+			if len(code.Bands) == resistor.Axial4Band {
 				cmd.PrintErrf("  Tolerance: %0.2f%% [%s]\n", code.Bands[3].Multiplier, code.Bands[3].Code)
 			}
 
-		case 5, 6:
+		case resistor.Axial5Band, resistor.Axial6Band:
 			cmd.PrintErrf(
 				"((%0.1f[%s] * 100) + (%0.1f[%s] * 10) + %0.1f[%s]) * %0.1f[%s]\n",
 				code.Bands[0].SigFig, code.Bands[0].Code,
@@ -63,7 +63,7 @@ func RunAxial(cmd *cobra.Command, args []string) {
 
 			cmd.PrintErrf("  Tolerance: %0.2f%% [%s]\n", code.Bands[3].Multiplier, code.Bands[3].Code)
 
-			if len(code.Bands) == 6 {
+			if len(code.Bands) == resistor.Axial6Band {
 				cmd.PrintErrf("  Tolerance: %0.2f%% [%s]\n", code.Bands[3].Multiplier, code.Bands[3].Code)
 			}
 
@@ -72,7 +72,7 @@ func RunAxial(cmd *cobra.Command, args []string) {
 		}
 	}
 
-	val, err := code.Resistance()
+	val, err := code.Value()
 	if err != nil {
 		cmd.PrintErrln(err)
 		return

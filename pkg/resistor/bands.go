@@ -1,5 +1,6 @@
 package resistor
 
+//go:generate stringer -type=BandColor
 type BandColor int
 
 const (
@@ -8,7 +9,8 @@ const (
 )
 
 const (
-	Black BandColor = iota
+	None BandColor = iota
+	Black
 	Brown
 	Red
 	Orange
@@ -33,6 +35,13 @@ type Band struct {
 
 //nolint:mnd,gochecknoglobals // reference value
 var Bands = map[BandColor]Band{
+	None: {
+		Code:       "--",
+		SigFig:     Invalid,
+		Multiplier: Invalid,
+		Tolerance:  Invalid,
+		TCR:        Invalid,
+	},
 	Black: {
 		Code:       "BK",
 		SigFig:     0,

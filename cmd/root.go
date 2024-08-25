@@ -6,6 +6,7 @@ import (
 
 	"github.com/spf13/cobra"
 
+	"github.com/asphaltbuffet/ohm/cmd/axial"
 	"github.com/asphaltbuffet/ohm/cmd/man"
 	versionCmd "github.com/asphaltbuffet/ohm/cmd/version"
 )
@@ -22,12 +23,13 @@ func Execute() {
 // GetRootCommand returns the root command for the CLI.
 func NewCommand() *cobra.Command {
 	cmd := &cobra.Command{
-		Use:   "ohm [command]",
-		Short: "ohm calculates values for axial resistors",
-		Run: func(cmd *cobra.Command, _ []string) {
-			cmd.Help() //nolint: errcheck // don't care
-		},
+		Use:               "ohm",
+		Short:             "ohm calculates values for axial resistors",
+		Args:              cobra.NoArgs,
+		CompletionOptions: cobra.CompletionOptions{HiddenDefaultCmd: true},
 	}
+
+	cmd.AddCommand(axial.NewCommand())
 
 	cmd.AddCommand(man.NewCommand())
 	cmd.AddCommand(versionCmd.NewCommand())

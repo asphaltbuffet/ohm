@@ -1,45 +1,78 @@
 package resistor
 
+import "fmt"
+
+const (
+	Axial1Band int = iota + 1 // 0 Ω resistors are single black band
+	Axial3Band int = iota + 2
+	Axial4Band
+	Axial5Band
+	Axial6Band
+	// Axial7Band // 6-band with failure rate not implemented yet
+)
+
 // BandCode is a struct that represents a resistor 4, 5, or 6 band code.
 type BandCode struct {
-	Bands []Band
+	Reversed bool   // Reversed is true if the band is reversed from input order.
+	Bands    []Band // Bands is a slice of bands that make up the code.
 }
 
 // Validate checks if the band code is valid.
 func (bc BandCode) Validate() error {
-	if len(bc.Bands) < 3 || len(bc.Bands) > 6 { // TODO: support 0 Ω resistors (single black)
-		return &BandCodeLengthError{Length: len(bc.Bands)}
-	}
-
-	// gold/silver/pink bands are not allowed in the first two bands
-	for i := 0; i <= 1; i++ {
-		if bc.Bands[i].SignificantFigures == Invalid {
-			return &BandCodeColorError{ColorCode: bc.Bands[i].Code, BandType: "SigFig"}
-		}
-	}
-
-	// 3rd band is the multiplier
-	if bc.Bands[2].Multiplier == Invalid {
-		return &BandCodeColorError{ColorCode: bc.Bands[2].Code, BandType: "Mult"}
-	}
-
-	// 4th band is the tolerance
-	if len(bc.Bands) == 4 && bc.Bands[3].Tolerance == Invalid {
-		return &BandCodeColorError{ColorCode: bc.Bands[3].Code, BandType: "Tol"}
-	}
-
-	return nil
+	return validateBandOrder(bc.Bands)
 }
 
-func (bc BandCode) Resistance() (float64, error) {
+func validateBandOrder(b []Band) error {
+	l := len(b)
+
+	switch {
+	case l == 1 && b[0].Code == "BK": // 0 Ω resistors are single black band
+		// this is a valid 0 Ω resistor
+		return nil
+	case l < Axial3Band, l > Axial6Band:
+		return fmt.Errorf("validate %v: %w", b, ErrBandCodeLength)
+
+	case b[0].SigFig == Invalid:
+		return fmt.Errorf("%q as digit: %w", b[0].Code, ErrBandPosition)
+
+	case b[1].SigFig == Invalid:
+		return fmt.Errorf("%q as digit: %w", b[1].Code, ErrBandPosition)
+
+	// any color can be used for band 3 if it's a multiplier, but
+	// 5/6 band resistors have a 3rd significant figure band
+	case l >= Axial5Band && b[2].SigFig == Invalid:
+		return fmt.Errorf("%q as digit: %w", b[2].Code, ErrBandPosition)
+
+	case l == Axial4Band && b[3].Tolerance == Invalid:
+		return fmt.Errorf("%q as tolerance: %w", b[3].Code, ErrBandPosition)
+
+	case l >= Axial5Band && b[4].Tolerance == Invalid:
+		return fmt.Errorf("%q as tolerance: %w", b[4].Code, ErrBandPosition)
+
+	case l >= Axial6Band && b[5].TCR == Invalid:
+		return fmt.Errorf("%q as TCR: %w", b[5].Code, ErrBandPosition)
+
+	default:
+		return nil
+	}
+}
+
+// Value calculates the resistance of the band code in ohms.
+func (bc BandCode) Value() (float64, error) {
 	if err := bc.Validate(); err != nil {
 		return 0, err
 	}
 
 	switch len(bc.Bands) {
-	case 3, 4: //nolint:mnd // 3 or 4 bands
-		return (bc.Bands[0].SignificantFigures*10 + bc.Bands[1].SignificantFigures) * bc.Bands[2].Multiplier, nil
+	case Axial3Band, Axial4Band:
+		return (bc.Bands[0].SigFig*10 + bc.Bands[1].SigFig) * bc.Bands[2].Multiplier, nil
+
+	case Axial5Band, Axial6Band:
+		return (bc.Bands[0].SigFig*100 + bc.Bands[1].SigFig*10 + bc.Bands[2].SigFig) * bc.Bands[3].Multiplier,
+			nil
+
 	default:
-		return 0, &BandInvalidError{Bands: bc.Bands}
+		// we've already validated the band count; this should never happen
+		panic("invalid band code")
 	}
 }

@@ -30,35 +30,81 @@ func TestTokenize(t *testing.T) {
 }
 
 func TestParse(t *testing.T) {
+	type args struct {
+		s   []string
+		rev bool
+	}
+
 	tests := []struct {
-		name      string
-		args      string
-		want      *resistor.BandCode
-		assertion require.ErrorAssertionFunc
+		name    string
+		args    args
+		want    *resistor.BandCode
+		wantErr error
 	}{
-		{"empty", "", nil, require.Error},
-		{"one char", "B", nil, require.Error},
-		{"one token", "BK", &resistor.BandCode{Bands: []resistor.Band{resistor.Bands[resistor.Black]}}, require.NoError},
+		{"empty", args{[]string{}, false}, nil, resistor.ErrBandCodeLength},
+		{"one char", args{[]string{"B"}, false}, nil, resistor.ErrBandCodeLength}, // can't tokenize odd number of characters
+		{
+			"zero ohm",
+			args{[]string{"BK"}, false},
+			&resistor.BandCode{
+				Reversed: false,
+				Bands:    []resistor.Band{resistor.Bands[resistor.Black]},
+			},
+			nil,
+		},
 		{
 			"multiple tokens",
-			"BKBUPKSVSV",
+			args{[]string{"BKBUBKSVSV"}, false},
 			&resistor.BandCode{
+				Reversed: false,
 				Bands: []resistor.Band{
 					resistor.Bands[resistor.Black],
 					resistor.Bands[resistor.Blue],
-					resistor.Bands[resistor.Pink],
+					resistor.Bands[resistor.Black],
 					resistor.Bands[resistor.Silver],
 					resistor.Bands[resistor.Silver],
 				},
 			},
-			require.NoError,
+			nil,
 		},
-		{"invalid color", "ZZ", nil, require.Error},
+		{
+			"valid in reverse",
+			args{[]string{"SVSVBKBUBK"}, false},
+			&resistor.BandCode{
+				Reversed: true,
+				Bands: []resistor.Band{
+					resistor.Bands[resistor.Black],
+					resistor.Bands[resistor.Blue],
+					resistor.Bands[resistor.Black],
+					resistor.Bands[resistor.Silver],
+					resistor.Bands[resistor.Silver],
+				},
+			},
+			nil,
+		},
+		{"invalid color", args{[]string{"ZZ"}, false}, nil, resistor.ErrBandColor},
+		{
+			"pre-tokenized",
+			args{[]string{"BK", "BU", "BK", "SV", "SV"}, false},
+			&resistor.BandCode{
+				Reversed: false,
+				Bands: []resistor.Band{
+					resistor.Bands[resistor.Black],
+					resistor.Bands[resistor.Blue],
+					resistor.Bands[resistor.Black],
+					resistor.Bands[resistor.Silver],
+					resistor.Bands[resistor.Silver],
+				},
+			},
+			nil,
+		},
 	}
+
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := resistor.Parse(tt.args)
-			tt.assertion(t, err)
+			got, err := resistor.Parse(tt.args.s, tt.args.rev)
+
+			require.ErrorIs(t, err, tt.wantErr)
 			assert.Equal(t, tt.want, got)
 		})
 	}
@@ -75,7 +121,7 @@ func TestGetColor(t *testing.T) {
 		{"lowercase", "pk", resistor.Pink},
 		{"uppercase", "SV", resistor.Silver},
 		{"full name", "purple", resistor.Violet},
-		{"invalid", "ZZ", resistor.Invalid},
+		{"invalid", "ZZ", resistor.None},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {

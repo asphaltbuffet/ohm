@@ -21,7 +21,7 @@ func NewCommand() *cobra.Command {
 			return err
 		},
 		Run: func(cmd *cobra.Command, args []string) {
-			v, err := smd.Parse(args[0])
+			v, err := smd.New(args[0])
 			if err != nil {
 				cmd.PrintErrln(err)
 				return

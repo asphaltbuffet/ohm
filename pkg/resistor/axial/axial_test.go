@@ -29,9 +29,9 @@ func TestBandCode_Validate(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			bc := axial.BandCode{
-				Bands:    tt.bands,
-				Reversed: false,
+			bc := axial.Resistor{
+				Bands:      tt.bands,
+				IsReversed: false,
 			}
 
 			assert.ErrorIs(t, bc.Validate(), tt.want)
@@ -102,7 +102,7 @@ func TestBandCode_Value(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			bc := axial.BandCode{Reversed: false, Bands: tt.Bands}
+			bc := axial.Resistor{IsReversed: false, Bands: tt.Bands}
 
 			got, err := bc.Value()
 

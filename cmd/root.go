@@ -6,9 +6,8 @@ import (
 
 	"github.com/spf13/cobra"
 
-	axialcli "github.com/asphaltbuffet/ohm/cmd/axial"
+	"github.com/asphaltbuffet/ohm/cmd/calc"
 	"github.com/asphaltbuffet/ohm/cmd/man"
-	smdcli "github.com/asphaltbuffet/ohm/cmd/smd"
 	versionCmd "github.com/asphaltbuffet/ohm/cmd/version"
 )
 
@@ -30,8 +29,7 @@ func NewCommand() *cobra.Command {
 		CompletionOptions: cobra.CompletionOptions{HiddenDefaultCmd: true},
 	}
 
-	cmd.AddCommand(axialcli.NewCommand())
-	cmd.AddCommand(smdcli.NewCommand())
+	cmd.AddCommand(calc.NewCommand())
 
 	cmd.AddCommand(man.NewCommand())
 	cmd.AddCommand(versionCmd.NewCommand())

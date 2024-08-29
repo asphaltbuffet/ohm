@@ -6,7 +6,7 @@ import (
 	"strings"
 )
 
-func Parse(ss []string, rev bool) (*BandCode, error) {
+func New(ss ...string) (*Resistor, error) {
 	var (
 		tokens []string
 		err    error
@@ -23,14 +23,12 @@ func Parse(ss []string, rev bool) (*BandCode, error) {
 		return nil, fmt.Errorf("tokenized %v: %w", tokens, ErrBandCodeLength)
 	}
 
-	if rev {
-		slices.Reverse(tokens)
-	}
-
 	bands, err := convertToBands(tokens) // this only validates inputs are colors
 	if err != nil {
 		return nil, fmt.Errorf("convert to bands: %w", err)
 	}
+
+	rev := false
 
 	// if order is invalid, reverse the order and try again
 	if v := validateBandOrder(bands); v != nil {
@@ -43,7 +41,7 @@ func Parse(ss []string, rev bool) (*BandCode, error) {
 		}
 	}
 
-	return &BandCode{Reversed: rev, Bands: bands}, nil
+	return &Resistor{IsReversed: rev, Bands: bands}, nil
 }
 
 func convertToBands(tokens []string) ([]Band, error) {

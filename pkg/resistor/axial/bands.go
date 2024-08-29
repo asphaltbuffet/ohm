@@ -26,11 +26,15 @@ const (
 )
 
 type Band struct {
-	Code       string
-	SigFig     float64 // SignificantFigures is a digit of the resistor value in ohms.
-	Multiplier float64 // Multiplier is the multiplier of the resistor value.
-	Tolerance  float64 // Tolerance is the tolerance of the resistor value in percentage.
-	TCR        int     // TCR is the temperature coefficient of resistance in ppm/K.
+	Code string `json:"code"`
+	// SignificantFigures is a digit of the resistor value in ohms.
+	SigFig float64 `json:"sig_fig,omitempty"`
+	// Multiplier is the multiplier of the resistor value.
+	Multiplier float64 `json:"multiplier,omitempty"`
+	// Tolerance is the tolerance of the resistor value in percentage.
+	Tolerance float64 `json:"tolerance,omitempty"`
+	// TCR is the temperature coefficient of resistance in ppm/K.
+	TCR int `json:"tcr,omitempty"`
 }
 
 //nolint:mnd,gochecknoglobals // reference value

@@ -1,6 +1,7 @@
 package axial
 
 import (
+	"errors"
 	"fmt"
 	"slices"
 	"strings"
@@ -35,9 +36,9 @@ func New(ss ...string) (*Resistor, error) {
 		rev = !rev
 		slices.Reverse(bands)
 
-		err = validateBandOrder(bands)
-		if err != nil {
-			return nil, fmt.Errorf("reversed: %w", err) // TODO: this should wrap both errors; not hide the first one
+		revErr := validateBandOrder(bands)
+		if revErr != nil {
+			return nil, errors.Join(err, revErr)
 		}
 	}
 

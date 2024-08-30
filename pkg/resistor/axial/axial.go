@@ -25,6 +25,12 @@ type Resistor struct {
 	Bands []Band `json:"bands"`
 }
 
+var (
+	ErrBandCodeLength = errors.New("invalid length")
+	ErrBandColor      = errors.New("unknown color")
+	ErrBandPosition   = errors.New("invalid color at position")
+)
+
 var _ resistor.Resistor = new(Resistor)
 
 func New(ss ...string) (*Resistor, error) {
@@ -73,7 +79,7 @@ func convertToBands(tokens []string) ([]Band, error) {
 			return nil, fmt.Errorf("convert %q to band: %w", token, ErrBandColor)
 		}
 
-		bands = append(bands, Bands[c])
+		bands = append(bands, ColorToBand(c))
 	}
 
 	return bands, nil

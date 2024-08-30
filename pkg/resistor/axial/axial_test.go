@@ -10,10 +10,10 @@ import (
 )
 
 func TestBandCode_Validate(t *testing.T) {
-	black := axial.Bands[axial.Black]
-	red := axial.Bands[axial.Red]
-	gold := axial.Bands[axial.Gold]
-	pink := axial.Bands[axial.Pink]
+	black := axial.ColorToBand(axial.Black)
+	red := axial.ColorToBand(axial.Red)
+	gold := axial.ColorToBand(axial.Gold)
+	pink := axial.ColorToBand(axial.Pink)
 
 	tests := []struct {
 		name  string
@@ -40,10 +40,10 @@ func TestBandCode_Validate(t *testing.T) {
 }
 
 func TestBandCode_Value(t *testing.T) {
-	red := axial.Bands[axial.Red]
-	gold := axial.Bands[axial.Gold]
-	orange := axial.Bands[axial.Orange]
-	pink := axial.Bands[axial.Pink]
+	red := axial.ColorToBand(axial.Red)
+	gold := axial.ColorToBand(axial.Gold)
+	orange := axial.ColorToBand(axial.Orange)
+	pink := axial.ColorToBand(axial.Pink)
 
 	tests := []struct {
 		name      string

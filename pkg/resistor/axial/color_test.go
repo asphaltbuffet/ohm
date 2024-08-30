@@ -31,69 +31,68 @@ func TestTokenize(t *testing.T) {
 
 func TestParse(t *testing.T) {
 	type args struct {
-		s   []string
-		rev bool
+		s []string
 	}
 
 	tests := []struct {
 		name    string
 		args    args
-		want    *axial.BandCode
+		want    *axial.Resistor
 		wantErr error
 	}{
-		{"empty", args{[]string{}, false}, nil, axial.ErrBandCodeLength},
-		{"one char", args{[]string{"B"}, false}, nil, axial.ErrBandCodeLength}, // can't tokenize odd number of characters
+		{"empty", args{[]string{}}, nil, axial.ErrBandCodeLength},
+		{"one char", args{[]string{"B"}}, nil, axial.ErrBandCodeLength}, // can't tokenize odd number of characters
 		{
 			"zero ohm",
-			args{[]string{"BK"}, false},
-			&axial.BandCode{
-				Reversed: false,
-				Bands:    []axial.Band{axial.Bands[axial.Black]},
+			args{[]string{"BK"}},
+			&axial.Resistor{
+				IsReversed: false,
+				Bands:      []axial.Band{axial.ColorToBand(axial.Black)},
 			},
 			nil,
 		},
 		{
 			"multiple tokens",
-			args{[]string{"BKBUBKSVSV"}, false},
-			&axial.BandCode{
-				Reversed: false,
+			args{[]string{"BKBUBKSVSV"}},
+			&axial.Resistor{
+				IsReversed: false,
 				Bands: []axial.Band{
-					axial.Bands[axial.Black],
-					axial.Bands[axial.Blue],
-					axial.Bands[axial.Black],
-					axial.Bands[axial.Silver],
-					axial.Bands[axial.Silver],
+					axial.ColorToBand(axial.Black),
+					axial.ColorToBand(axial.Blue),
+					axial.ColorToBand(axial.Black),
+					axial.ColorToBand(axial.Silver),
+					axial.ColorToBand(axial.Silver),
 				},
 			},
 			nil,
 		},
 		{
 			"valid in reverse",
-			args{[]string{"SVSVBKBUBK"}, false},
-			&axial.BandCode{
-				Reversed: true,
+			args{[]string{"SVSVBKBUBK"}},
+			&axial.Resistor{
+				IsReversed: true,
 				Bands: []axial.Band{
-					axial.Bands[axial.Black],
-					axial.Bands[axial.Blue],
-					axial.Bands[axial.Black],
-					axial.Bands[axial.Silver],
-					axial.Bands[axial.Silver],
+					axial.ColorToBand(axial.Black),
+					axial.ColorToBand(axial.Blue),
+					axial.ColorToBand(axial.Black),
+					axial.ColorToBand(axial.Silver),
+					axial.ColorToBand(axial.Silver),
 				},
 			},
 			nil,
 		},
-		{"invalid color", args{[]string{"ZZ"}, false}, nil, axial.ErrBandColor},
+		{"invalid color", args{[]string{"ZZ"}}, nil, axial.ErrBandColor},
 		{
 			"pre-tokenized",
-			args{[]string{"BK", "BU", "BK", "SV", "SV"}, false},
-			&axial.BandCode{
-				Reversed: false,
+			args{[]string{"BK", "BU", "BK", "SV", "SV"}},
+			&axial.Resistor{
+				IsReversed: false,
 				Bands: []axial.Band{
-					axial.Bands[axial.Black],
-					axial.Bands[axial.Blue],
-					axial.Bands[axial.Black],
-					axial.Bands[axial.Silver],
-					axial.Bands[axial.Silver],
+					axial.ColorToBand(axial.Black),
+					axial.ColorToBand(axial.Blue),
+					axial.ColorToBand(axial.Black),
+					axial.ColorToBand(axial.Silver),
+					axial.ColorToBand(axial.Silver),
 				},
 			},
 			nil,
@@ -102,7 +101,7 @@ func TestParse(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := axial.Parse(tt.args.s, tt.args.rev)
+			got, err := axial.New(tt.args.s...)
 
 			require.ErrorIs(t, err, tt.wantErr)
 			assert.Equal(t, tt.want, got)

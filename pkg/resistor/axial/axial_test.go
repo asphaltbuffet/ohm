@@ -10,10 +10,10 @@ import (
 )
 
 func TestBandCode_Validate(t *testing.T) {
-	black := axial.Bands[axial.Black]
-	red := axial.Bands[axial.Red]
-	gold := axial.Bands[axial.Gold]
-	pink := axial.Bands[axial.Pink]
+	black := axial.ColorToBand(axial.Black)
+	red := axial.ColorToBand(axial.Red)
+	gold := axial.ColorToBand(axial.Gold)
+	pink := axial.ColorToBand(axial.Pink)
 
 	tests := []struct {
 		name  string
@@ -29,9 +29,9 @@ func TestBandCode_Validate(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			bc := axial.BandCode{
-				Bands:    tt.bands,
-				Reversed: false,
+			bc := axial.Resistor{
+				Bands:      tt.bands,
+				IsReversed: false,
 			}
 
 			assert.ErrorIs(t, bc.Validate(), tt.want)
@@ -40,10 +40,10 @@ func TestBandCode_Validate(t *testing.T) {
 }
 
 func TestBandCode_Value(t *testing.T) {
-	red := axial.Bands[axial.Red]
-	gold := axial.Bands[axial.Gold]
-	orange := axial.Bands[axial.Orange]
-	pink := axial.Bands[axial.Pink]
+	red := axial.ColorToBand(axial.Red)
+	gold := axial.ColorToBand(axial.Gold)
+	orange := axial.ColorToBand(axial.Orange)
+	pink := axial.ColorToBand(axial.Pink)
 
 	tests := []struct {
 		name      string
@@ -102,7 +102,7 @@ func TestBandCode_Value(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			bc := axial.BandCode{Reversed: false, Bands: tt.Bands}
+			bc := axial.Resistor{IsReversed: false, Bands: tt.Bands}
 
 			got, err := bc.Value()
 

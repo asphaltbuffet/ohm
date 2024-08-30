@@ -6,23 +6,22 @@ import (
 
 	"github.com/spf13/cobra"
 
-	axialcli "github.com/asphaltbuffet/ohm/cmd/axial"
+	"github.com/asphaltbuffet/ohm/cmd/calc"
 	"github.com/asphaltbuffet/ohm/cmd/man"
-	smdcli "github.com/asphaltbuffet/ohm/cmd/smd"
 	versionCmd "github.com/asphaltbuffet/ohm/cmd/version"
 )
 
 // Execute adds all child commands to the root command and sets flags appropriately.
 // This is called by main.main(). It only needs to happen once to the rootCmd.
 func Execute() {
-	err := NewCommand().Execute()
+	err := RootCommand().Execute()
 	if err != nil {
 		os.Exit(1)
 	}
 }
 
 // GetRootCommand returns the root command for the CLI.
-func NewCommand() *cobra.Command {
+func RootCommand() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:               "ohm",
 		Short:             "ohm calculates the values of resistors",
@@ -30,8 +29,7 @@ func NewCommand() *cobra.Command {
 		CompletionOptions: cobra.CompletionOptions{HiddenDefaultCmd: true},
 	}
 
-	cmd.AddCommand(axialcli.NewCommand())
-	cmd.AddCommand(smdcli.NewCommand())
+	cmd.AddCommand(calc.NewCommand())
 
 	cmd.AddCommand(man.NewCommand())
 	cmd.AddCommand(versionCmd.NewCommand())
